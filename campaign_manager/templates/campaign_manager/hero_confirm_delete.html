@@ -1,0 +1,12 @@
+{% extends 'campaign_manager/base.html' %}
+
+{% block title %}Confirm Delete{% endblock %}
+
+{% block content %}
+    <h1>Are you sure you want to delete {{ hero.name }}?</h1>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a href="{% url 'hero_list' hero.game_session.pk %}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+{% endblock %}

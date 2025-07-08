@@ -1,0 +1,13 @@
+{% extends 'campaign_manager/base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Enemy{% endblock %}
+
+{% block content %}
+    <h1>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Enemy to {{ game_session.name }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Save</button>
+        <a href="{% url 'enemy_list' game_session.pk %}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'campaign_manager/base.html' %}
+
+{% block title %}Game Sessions{% endblock %}
+
+{% block content %}
+    <h1>Game Sessions</h1>
+    <div class="list-group">
+        {% for session in sessions %}
+            <a href="{% url 'game_session_detail' session.pk %}" class="list-group-item list-group-item-action">
+                {{ session.name }}
+            </a>
+        {% empty %}
+            <p>No game sessions yet.</p>
+        {% endfor %}
+    </div>
+{% endblock %}
