@@ -1,13 +1,23 @@
 {% extends 'campaign_manager/base.html' %}
+{% load i18n %}
 
-{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Encounter{% endblock %}
+{% block title %}{% if form.instance.pk %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {% trans "Encounter" %}{% endblock %}
 
 {% block content %}
-    <h1>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Encounter to {{ game_session.name }}</h1>
+    <h1>{% if form.instance.pk %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {% trans "Encounter to" %} {{ game_session.name }}</h1>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Save</button>
-        <a href="{% url 'encounter_list' game_session.pk %}" class="btn btn-secondary ms-2">Cancel</a>
+        <div class="mb-3">
+            <label for="id_name" class="form-label">{% trans "Name" %}</label>
+            {{ form.name }}
+        </div>
+        <div class="mb-3">
+            <label for="id_description" class="form-label">{% trans "Description" %}</label>
+            {{ form.description }}
+        </div>
+
+        {{ form.game_session }}
+        <button type="submit" class="btn btn-success">{% trans "Save" %}</button>
+        <a href="{% url 'game_session_detail' game_session.pk %}" class="btn btn-secondary ms-2">{% trans "Cancel" %}</a>
     </form>
 {% endblock %}

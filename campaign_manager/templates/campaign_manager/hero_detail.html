@@ -1,0 +1,84 @@
+{% extends 'campaign_manager/base.html' %}
+{% load campaign_manager_filters %}
+{% load i18n %}
+
+{% block title %}{{ hero.name }}{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ hero.name }}</h1>
+        <div>
+            <a href="{% url 'hero_update' hero.pk %}" class="btn btn-warning"><i class="fas fa-edit"></i> {% trans "Edit" %}</a>
+            <a href="{% url 'hero_list' hero.game_session.pk %}" class="btn btn-secondary ms-2"><i class="fas fa-arrow-left"></i> {% trans "Back to Heroes" %}</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">{% trans "General Information" %}</div>
+                <div class="card-body">
+                    <p><strong>{% trans "Game Session:" %}</strong> {{ hero.game_session.name }}</p>
+                    <p><strong>{% trans "Player Name:" %}</strong> {{ hero.player_name }}</p>
+                    <p><strong>{% trans "Class:" %}</strong> {{ hero.char_class }} ({{ hero.char_subclass }})</p>
+                    <p><strong>{% trans "Level:" %}</strong> {{ hero.level }}</p>
+                    <p><strong>{% trans "Race:" %}</strong> {{ hero.race }}</p>
+                    <p><strong>{% trans "Background:" %}</strong> {{ hero.background }}</p>
+                    <p><strong>{% trans "Alignment:" %}</strong> {{ hero.alignment }}</p>
+                    <p><strong>{% trans "Proficiency Bonus:" %}</strong> {{ hero.proficiency_bonus }}</p>
+                    <p><strong>{% trans "Speed:" %}</strong> {{ hero.speed }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">{% trans "Combat Stats" %}</div>
+                <div class="card-body">
+                    <p><strong>{% trans "HP:" %}</strong> {{ hero.current_hp }}/{{ hero.max_hp }}</p>
+                    <p><strong>{% trans "AC:" %}</strong> {{ hero.armor_class }}</p>
+                    <div class="row">
+                        <div class="col-6"><p><strong>{% trans "Strength:" %}</strong> {{ hero.strength }}{{ hero.strength|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Dexterity:" %}</strong> {{ hero.dexterity }}{{ hero.dexterity|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Constitution:" %}</strong> {{ hero.constitution }}{{ hero.constitution|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Intelligence:" %}</strong> {{ hero.intelligence }}{{ hero.intelligence|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Wisdom:" %}</strong> {{ hero.wisdom }}{{ hero.wisdom|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Charisma:" %}</strong> {{ hero.charisma }}{{ hero.charisma|ability_modifier }}</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">{% trans "Descriptions" %}</div>
+        <div class="card-body">
+            {% if hero.traits_description %}
+                <h4>{% trans "Traits" %}</h4>
+                <p>{{ hero.traits_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if hero.proficiencies_description %}
+                <h4>{% trans "Proficiencies" %}</h4>
+                <p>{{ hero.proficiencies_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if hero.equipment_description %}
+                <h4>{% trans "Equipment" %}</h4>
+                <p>{{ hero.equipment_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if hero.attacks_description %}
+                <h4>{% trans "Attacks" %}</h4>
+                <p>{{ hero.attacks_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if hero.coins_description %}
+                <h4>{% trans "Coins" %}</h4>
+                <p>{{ hero.coins_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if hero.resources_description %}
+                <h4>{% trans "Resources" %}</h4>
+                <p>{{ hero.resources_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if not hero.traits_description and not hero.proficiencies_description and not hero.equipment_description and not hero.attacks_description and not hero.coins_description and not hero.resources_description %}
+                <p>{% trans "No additional descriptions available." %}</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

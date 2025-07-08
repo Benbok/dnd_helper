@@ -1,12 +1,13 @@
 {% extends 'campaign_manager/base.html' %}
+{% load i18n %}
 
-{% block title %}Confirm Delete{% endblock %}
+{% block title %}{% trans "Confirm Delete" %}{% endblock %}
 
 {% block content %}
-    <h1>Are you sure you want to delete {{ enemy.name }}?</h1>
+    <h1>{% trans "Are you sure you want to delete" %} {{ enemy.name }}?</h1>
     <form method="post">
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Delete</button>
-        <a href="{% url 'enemy_list' enemy.game_session.pk %}" class="btn btn-secondary ms-2">Cancel</a>
+        <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
+        <a href="{% url 'enemy_list' enemy.game_session.pk %}" class="btn btn-secondary ms-2">{% trans "Cancel" %}</a>
     </form>
 {% endblock %}

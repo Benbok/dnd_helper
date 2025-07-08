@@ -1,13 +1,135 @@
 {% extends 'campaign_manager/base.html' %}
+{% load i18n %}
 
-{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Hero{% endblock %}
+{% block title %}{% if form.instance.pk %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {% trans "Hero" %}{% endblock %}
 
 {% block content %}
-    <h1>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Hero to {{ game_session.name }}</h1>
+    <h1>{% if form.instance.pk %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {% trans "Hero to" %} {{ game_session.name }}</h1>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Save</button>
-        <a href="{% url 'hero_list' game_session.pk %}" class="btn btn-secondary ms-2">Cancel</a>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">{% trans "General Information" %}</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label">{% trans "Name" %}</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_player_name" class="form-label">{% trans "Player Name" %}</label>
+                            {{ form.player_name }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_char_class" class="form-label">{% trans "Class" %}</label>
+                            {{ form.char_class }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_char_subclass" class="form-label">{% trans "Subclass" %}</label>
+                            {{ form.char_subclass }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_level" class="form-label">{% trans "Level" %}</label>
+                            {{ form.level }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_race" class="form-label">{% trans "Race" %}</label>
+                            {{ form.race }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_background" class="form-label">{% trans "Background" %}</label>
+                            {{ form.background }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_alignment" class="form-label">{% trans "Alignment" %}</label>
+                            {{ form.alignment }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_speed" class="form-label">{% trans "Speed" %}</label>
+                            {{ form.speed }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_proficiency_bonus" class="form-label">{% trans "Proficiency Bonus" %}</label>
+                            {{ form.proficiency_bonus }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">{% trans "Combat Stats" %}</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="id_max_hp" class="form-label">{% trans "Max HP" %}</label>
+                            {{ form.max_hp }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_armor_class" class="form-label">{% trans "Armor Class" %}</label>
+                            {{ form.armor_class }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="id_strength" class="form-label">{% trans "Strength" %}</label>
+                                {{ form.strength }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="id_dexterity" class="form-label">{% trans "Dexterity" %}</label>
+                                {{ form.dexterity }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="id_constitution" class="form-label">{% trans "Constitution" %}</label>
+                                {{ form.constitution }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="id_intelligence" class="form-label">{% trans "Intelligence" %}</label>
+                                {{ form.intelligence }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="id_wisdom" class="form-label">{% trans "Wisdom" %}</label>
+                                {{ form.wisdom }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="id_charisma" class="form-label">{% trans "Charisma" %}</label>
+                                {{ form.charisma }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">{% trans "Descriptions" %}</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="id_traits_description" class="form-label">{% trans "Traits" %}</label>
+                    {{ form.traits_description }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_proficiencies_description" class="form-label">{% trans "Proficiencies" %}</label>
+                    {{ form.proficiencies_description }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_equipment_description" class="form-label">{% trans "Equipment" %}</label>
+                    {{ form.equipment_description }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_attacks_description" class="form-label">{% trans "Attacks" %}</label>
+                    {{ form.attacks_description }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_coins_description" class="form-label">{% trans "Coins" %}</label>
+                    {{ form.coins_description }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_resources_description" class="form-label">{% trans "Resources" %}</label>
+                    {{ form.resources_description }}
+                </div>
+            </div>
+        </div>
+
+        {{ form.game_session }}
+        <button type="submit" class="btn btn-success">{% trans "Save" %}</button>
+        <a href="{% url 'hero_list' game_session.pk %}" class="btn btn-secondary ms-2">{% trans "Cancel" %}</a>
     </form>
 {% endblock %}

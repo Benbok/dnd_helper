@@ -1,32 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils.translation import gettext_lazy as _t
 import random
 from .models import GameSession, Hero, Enemy, Encounter, Combatant, EncounterLog
 from .forms import HeroForm, EnemyForm, EncounterForm, AttackForm, HealForm
-
-def heal(request, pk):
-    encounter = get_object_or_404(Encounter, pk=pk)
-    if request.method == 'POST':
-        form = HealForm(request.POST, encounter=encounter)
-        if form.is_valid():
-            healer = form.cleaned_data['healer']
-            target = form.cleaned_data['target']
-            amount = form.cleaned_data['amount']
-
-            target.current_hp = min(target.current_hp + amount, target.hero.max_hp if target.hero else target.enemy.max_hp)
-            target.save()
-
-            if target.hero:
-                target.hero.current_hp = target.current_hp
-                target.hero.save()
-
-            EncounterLog.objects.create(
-                encounter=encounter,
-                actor=healer,
-                target=target,
-                action_description=f'{healer} heals {target} for {amount} HP.'
-            )
-            return redirect('encounter_detail', pk=encounter.pk)
-    return redirect('encounter_detail', pk=encounter.pk)
 
 def game_session_list(request):
     sessions = GameSession.objects.all()
@@ -75,6 +51,10 @@ def hero_delete(request, pk):
         return redirect('hero_list', game_session_pk=game_session_pk)
     return render(request, 'campaign_manager/hero_confirm_delete.html', {'hero': hero})
 
+def hero_detail(request, pk):
+    hero = get_object_or_404(Hero, pk=pk)
+    return render(request, 'campaign_manager/hero_detail.html', {'hero': hero})
+
 # Enemy CRUD
 def enemy_list(request, game_session_pk):
     game_session = get_object_or_404(GameSession, pk=game_session_pk)
@@ -112,6 +92,10 @@ def enemy_delete(request, pk):
         enemy.delete()
         return redirect('enemy_list', game_session_pk=game_session_pk)
     return render(request, 'campaign_manager/enemy_confirm_delete.html', {'enemy': enemy})
+
+def enemy_detail(request, pk):
+    enemy = get_object_or_404(Enemy, pk=pk)
+    return render(request, 'campaign_manager/enemy_detail.html', {'enemy': enemy})
 
 # Encounter CRUD
 def encounter_list(request, game_session_pk):
@@ -182,7 +166,7 @@ def start_encounter(request, pk):
                 initiative = random.randint(1, 20) + ((enemy.dexterity - 10) // 2)
                 Combatant.objects.create(encounter=encounter, enemy=enemy, current_hp=enemy.max_hp, initiative=initiative)
         
-        EncounterLog.objects.create(encounter=encounter, action_description=f"Round 1 begins!")
+        EncounterLog.objects.create(encounter=encounter, action_description=_t("Round 1 begins!"))
 
         return redirect('encounter_detail', pk=encounter.pk)
     return redirect('encounter_detail', pk=encounter.pk)
@@ -204,7 +188,7 @@ def next_turn(request, pk):
             if encounter.active_combatant_index >= len(combatants):
                 encounter.active_combatant_index = 0
                 encounter.current_round += 1
-                EncounterLog.objects.create(encounter=encounter, action_description=f"Round {encounter.current_round} begins!")
+                EncounterLog.objects.create(encounter=encounter, action_description=_t("Round %(round_num)s begins!") % {'round_num': encounter.current_round})
             
             # Check if the current combatant is alive
             if combatants[encounter.active_combatant_index].current_hp > 0:
@@ -219,12 +203,13 @@ def next_turn(request, pk):
 
         if not heroes_alive or not enemies_alive:
             encounter.is_active = False
-            EncounterLog.objects.create(encounter=encounter, action_description="Encounter ended!")
+            EncounterLog.objects.create(encounter=encounter, action_description=_t("Encounter ended!"))
             encounter.save()
             return redirect('game_session_detail', pk=encounter.game_session.pk)
 
         encounter.save()
     return redirect('encounter_detail', pk=encounter.pk)
+
 
 def attack(request, pk):
     encounter = get_object_or_404(Encounter, pk=pk)
@@ -246,14 +231,40 @@ def attack(request, pk):
                 encounter=encounter,
                 actor=attacker,
                 target=target,
-                action_description=f'{attacker} attacks {target} for {damage} damage.'
+                action_description=_t('%(attacker)s attacks %(target)s for %(damage)s damage.') % {'attacker': attacker, 'target': target, 'damage': damage}
             )
 
             if target.current_hp <= 0:
                 EncounterLog.objects.create(
                     encounter=encounter,
                     target=target,
-                    action_description=f'{target} has been defeated!'
+                    action_description=_t('%(target)s has been defeated!') % {'target': target}
                 )
+            return redirect('encounter_detail', pk=encounter.pk)
+    return redirect('encounter_detail', pk=encounter.pk)
+
+
+def heal(request, pk):
+    encounter = get_object_or_404(Encounter, pk=pk)
+    if request.method == 'POST':
+        form = HealForm(request.POST, encounter=encounter)
+        if form.is_valid():
+            healer = form.cleaned_data['healer']
+            target = form.cleaned_data['target']
+            amount = form.cleaned_data['amount']
+
+            target.current_hp = min(target.current_hp + amount, target.hero.max_hp if target.hero else target.enemy.max_hp)
+            target.save()
+
+            if target.hero:
+                target.hero.current_hp = target.current_hp
+                target.hero.save()
+
+            EncounterLog.objects.create(
+                encounter=encounter,
+                actor=healer,
+                target=target,
+                action_description=_t('%(healer)s heals %(target)s for %(amount)s HP.') % {'healer': healer, 'target': target, 'amount': amount}
+            )
             return redirect('encounter_detail', pk=encounter.pk)
     return redirect('encounter_detail', pk=encounter.pk)

@@ -10,12 +10,14 @@ urlpatterns = [
     path('session/<int:game_session_pk>/heroes/add/', views.hero_create, name='hero_create'),
     path('heroes/<int:pk>/edit/', views.hero_update, name='hero_update'),
     path('heroes/<int:pk>/delete/', views.hero_delete, name='hero_delete'),
+    path('heroes/<int:pk>/', views.hero_detail, name='hero_detail'),
 
     # Enemy URLs
     path('session/<int:game_session_pk>/enemies/', views.enemy_list, name='enemy_list'),
     path('session/<int:game_session_pk>/enemies/add/', views.enemy_create, name='enemy_create'),
     path('enemies/<int:pk>/edit/', views.enemy_update, name='enemy_update'),
     path('enemies/<int:pk>/delete/', views.enemy_delete, name='enemy_delete'),
+    path('enemies/<int:pk>/', views.enemy_detail, name='enemy_detail'),
 
     # Encounter URLs
     path('session/<int:game_session_pk>/encounters/', views.encounter_list, name='encounter_list'),

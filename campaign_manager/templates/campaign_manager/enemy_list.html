@@ -1,31 +1,38 @@
 {% extends 'campaign_manager/base.html' %}
+{% load i18n %}
 
-{% block title %}Enemies - {{ game_session.name }}{% endblock %}
+{% block title %}{% trans "Enemies" %} - {{ game_session.name }}{% endblock %}
 
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Enemies in {{ game_session.name }}</h1>
+        <h1>{% trans "Enemies in" %} {{ game_session.name }}</h1>
         <div>
-            <a href="{% url 'enemy_create' game_session.pk %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Enemy</a>
-            <a href="{% url 'game_session_detail' game_session.pk %}" class="btn btn-secondary ms-2"><i class="fas fa-arrow-left"></i> Back to Session</a>
+            <a href="{% url 'enemy_create' game_session.pk %}" class="btn btn-primary"><i class="fas fa-plus"></i> {% trans "Add Enemy" %}</a>
+            <a href="{% url 'game_session_detail' game_session.pk %}" class="btn btn-secondary ms-2"><i class="fas fa-arrow-left"></i> {% trans "Back to Session" %}</a>
         </div>
     </div>
 
     <div class="row">
         {% for enemy in enemies %}
             <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-body">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
                         <h5 class="card-title">{{ enemy.name }}</h5>
-                        <p class="card-text">HP: {{ enemy.max_hp }} | AC: {{ enemy.armor_class }}</p>
-                        <a href="{% url 'enemy_update' enemy.pk %}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i> Edit</a>
-                        <a href="{% url 'enemy_delete' enemy.pk %}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete</a>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ enemy.creature_type }} - CR {{ enemy.challenge_rating }}</h6>
+                        <p class="card-text mb-1">{% trans "HP:" %} {{ enemy.max_hp }} | {% trans "AC:" %} {{ enemy.armor_class }}</p>
+                        <p class="card-text mb-3">{% trans "Speed:" %} {{ enemy.speed }}</p>
+                        
+                        <div class="mt-auto">
+                            <a href="{% url 'enemy_detail' enemy.pk %}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i> {% trans "View" %}</a>
+                            <a href="{% url 'enemy_update' enemy.pk %}" class="btn btn-sm btn-warning ms-2"><i class="fas fa-edit"></i> {% trans "Edit" %}</a>
+                            <a href="{% url 'enemy_delete' enemy.pk %}" class="btn btn-sm btn-danger ms-2"><i class="fas fa-trash"></i> {% trans "Delete" %}</a>
+                        </div>
                     </div>
                 </div>
             </div>
         {% empty %}
             <div class="col">
-                <p>No enemies yet.</p>
+                <p>{% trans "No enemies yet." %}</p>
             </div>
         {% endfor %}
     </div>

@@ -1,0 +1,111 @@
+{% extends 'campaign_manager/base.html' %}
+{% load campaign_manager_filters %}
+{% load i18n %}
+
+{% block title %}{{ enemy.name }}{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ enemy.name }}</h1>
+        <div>
+            <a href="{% url 'enemy_update' enemy.pk %}" class="btn btn-warning"><i class="fas fa-edit"></i> {% trans "Edit" %}</a>
+            <a href="{% url 'enemy_list' enemy.game_session.pk %}" class="btn btn-secondary ms-2"><i class="fas fa-arrow-left"></i> {% trans "Back to Enemies" %}</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">{% trans "Basic Information" %}</div>
+                <div class="card-body">
+                    <p><strong>{% trans "Game Session:" %}</strong> {{ enemy.game_session.name }}</p>
+                    <p><strong>{% trans "Creature Type:" %}</strong> {{ enemy.creature_type }}</p>
+                    <p><strong>{% trans "Size:" %}</strong> {{ enemy.size }}</p>
+                    <p><strong>{% trans "Source:" %}</strong> {{ enemy.source }}</p>
+                    <p><strong>{% trans "Challenge Rating:" %}</strong> {{ enemy.challenge_rating }}</p>
+                    <p><strong>{% trans "Proficiency Bonus:" %}</strong> {{ enemy.proficiency_bonus }}</p>
+                    <p><strong>{% trans "Speed:" %}</strong> {{ enemy.speed }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">{% trans "Combat Stats" %}</div>
+                <div class="card-body">
+                    <p><strong>{% trans "HP:" %}</strong> {{ enemy.max_hp }}</p>
+                    <p><strong>{% trans "AC:" %}</strong> {{ enemy.armor_class }}</p>
+                    <div class="row">
+                        <div class="col-6"><p><strong>{% trans "Strength:" %}</strong> {{ enemy.strength }}{{ enemy.strength|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Dexterity:" %}</strong> {{ enemy.dexterity }}{{ enemy.dexterity|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Constitution:" %}</strong> {{ enemy.constitution }}{{ enemy.constitution|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Intelligence:" %}</strong> {{ enemy.intelligence }}{{ enemy.intelligence|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Wisdom:" %}</strong> {{ enemy.wisdom }}{{ enemy.wisdom|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Charisma:" %}</strong> {{ enemy.charisma }}{{ enemy.charisma|ability_modifier }}</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">{% trans "Immunities & Senses" %}</div>
+        <div class="card-body">
+            {% if enemy.damage_immunities %}
+                <p><strong>{% trans "Damage Immunities:" %}</strong> {{ enemy.damage_immunities }}</p>
+            {% endif %}
+            {% if enemy.condition_immunities %}
+                <p><strong>{% trans "Condition Immunities:" %}</strong> {{ enemy.condition_immunities }}</p>
+            {% endif %}
+            {% if enemy.senses %}
+                <p><strong>{% trans "Senses:" %}</strong> {{ enemy.senses }}</p>
+            {% endif %}
+            {% if enemy.languages %}
+                <p><strong>{% trans "Languages:" %}</strong> {{ enemy.languages }}</p>
+            {% endif %}
+            {% if not enemy.damage_immunities and not enemy.condition_immunities and not enemy.senses and not enemy.languages %}
+                <p>{% trans "No immunities or senses specified." %}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">{% trans "Descriptions & Actions" %}</div>
+        <div class="card-body">
+            {% if enemy.description %}
+                <h4>{% trans "Description" %}</h4>
+                <p>{{ enemy.description|linebreaksbr }}</p>
+            {% endif %}
+            {% if enemy.traits_description %}
+                <h4>{% trans "Traits" %}</h4>
+                <p>{{ enemy.traits_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if enemy.actions_description %}
+                <h4>{% trans "Actions" %}</h4>
+                <p>{{ enemy.actions_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if enemy.proficiencies_description %}
+                <h4>{% trans "Proficiencies" %}</h4>
+                <p>{{ enemy.proficiencies_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if enemy.equipment_description %}
+                <h4>{% trans "Equipment" %}</h4>
+                <p>{{ enemy.equipment_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if enemy.attacks_description %}
+                <h4>{% trans "Attacks" %}</h4>
+                <p>{{ enemy.attacks_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if enemy.coins_description %}
+                <h4>{% trans "Coins" %}</h4>
+                <p>{{ enemy.coins_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if enemy.resources_description %}
+                <h4>{% trans "Resources" %}</h4>
+                <p>{{ enemy.resources_description|linebreaksbr }}</p>
+            {% endif %}
+            {% if not enemy.description and not enemy.traits_description and not enemy.actions_description and not enemy.proficiencies_description and not enemy.equipment_description and not enemy.attacks_description and not enemy.coins_description and not enemy.resources_description %}
+                <p>{% trans "No additional descriptions or actions available." %}</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

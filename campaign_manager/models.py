@@ -21,6 +21,31 @@ class Character(models.Model):
     armor_class = models.PositiveIntegerField(default=10)
     max_hp = models.PositiveIntegerField(default=10)
 
+    # Monster-specific fields (now directly in Character)
+    size = models.CharField(max_length=50, blank=True, null=True)
+    creature_type = models.CharField(max_length=100, blank=True, null=True)
+    source = models.CharField(max_length=100, blank=True, null=True)
+    damage_immunities = models.TextField(blank=True, null=True)
+    condition_immunities = models.TextField(blank=True, null=True)
+    senses = models.TextField(blank=True, null=True)
+    languages = models.TextField(blank=True, null=True)
+    challenge_rating = models.CharField(max_length=50, blank=True, null=True)
+    actions_description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+
+    # General fields (race remains here as it applies to both heroes and some enemies)
+    race = models.CharField(max_length=100, blank=True, null=True)
+    proficiency_bonus = models.PositiveIntegerField(default=2)
+    speed = models.CharField(max_length=50, blank=True, null=True)
+
+    # Text fields for complex data (already existing)
+    traits_description = models.TextField(blank=True, null=True)
+    proficiencies_description = models.TextField(blank=True, null=True)
+    equipment_description = models.TextField(blank=True, null=True)
+    attacks_description = models.TextField(blank=True, null=True)
+    coins_description = models.TextField(blank=True, null=True)
+    resources_description = models.TextField(blank=True, null=True)
+
     class Meta:
         abstract = True
 
@@ -28,6 +53,14 @@ class Character(models.Model):
 class Hero(Character):
     game_session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name='heroes')
     current_hp = models.IntegerField()
+    player_name = models.CharField(max_length=255, blank=True, null=True)
+
+    # Fields moved from Character to Hero
+    char_class = models.CharField(max_length=100, blank=True, null=True)
+    char_subclass = models.CharField(max_length=100, blank=True, null=True)
+    level = models.PositiveIntegerField(default=1)
+    background = models.CharField(max_length=100, blank=True, null=True)
+    alignment = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.name

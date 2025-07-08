@@ -1,4 +1,5 @@
 {% extends 'campaign_manager/base.html' %}
+{% load i18n %}
 
 {% block title %}{{ session.name }}{% endblock %}
 
@@ -10,18 +11,18 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Heroes</h5>
-                    <p class="card-text">Manage the heroes in this game session.</p>
-                    <a href="{% url 'hero_list' session.pk %}" class="btn btn-primary">View Heroes</a>
+                    <h5 class="card-title">{% trans "Heroes" %}</h5>
+                    <p class="card-text">{% trans "Manage the heroes in this game session." %}</p>
+                    <a href="{% url 'hero_list' session.pk %}" class="btn btn-primary">{% trans "View Heroes" %}</a>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Enemies</h5>
-                    <p class="card-text">Manage the enemies in this game session.</p>
-                    <a href="{% url 'enemy_list' session.pk %}" class="btn btn-primary">View Enemies</a>
+                    <h5 class="card-title">{% trans "Enemies" %}</h5>
+                    <p class="card-text">{% trans "Manage the enemies in this game session." %}</p>
+                    <a href="{% url 'enemy_list' session.pk %}" class="btn btn-primary">{% trans "View Enemies" %}</a>
                 </div>
             </div>
         </div>
@@ -29,24 +30,24 @@
 
     <div class="mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>Encounters</h2>
-            <a href="{% url 'encounter_create' session.pk %}" class="btn btn-success"><i class="fas fa-plus"></i> New Encounter</a>
+            <h2>{% trans "Encounters" %}</h2>
+            <a href="{% url 'encounter_create' session.pk %}" class="btn btn-success"><i class="fas fa-plus"></i> {% trans "New Encounter" %}</a>
         </div>
         <ul class="list-group mt-3">
             {% for encounter in session.encounters.all %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     {{ encounter.name }}
                     {% if not encounter.is_active %}
-                        <span class="badge bg-secondary ms-2">Completed</span>
+                        <span class="badge bg-secondary ms-2">{% trans "Completed" %}</span>
                     {% endif %}
                     <div>
-                        <a href="{% url 'encounter_detail' encounter.pk %}" class="btn btn-sm btn-info">View</a>
-                        <a href="{% url 'encounter_update' encounter.pk %}" class="btn btn-sm btn-warning ms-2"><i class="fas fa-edit"></i> Edit</a>
-                        <a href="{% url 'encounter_delete' encounter.pk %}" class="btn btn-sm btn-danger ms-2"><i class="fas fa-trash"></i> Delete</a>
+                        <a href="{% url 'encounter_detail' encounter.pk %}" class="btn btn-sm btn-info">{% trans "View" %}</a>
+                        <a href="{% url 'encounter_update' encounter.pk %}" class="btn btn-sm btn-warning ms-2"><i class="fas fa-edit"></i> {% trans "Edit" %}</a>
+                        <a href="{% url 'encounter_delete' encounter.pk %}" class="btn btn-sm btn-danger ms-2"><i class="fas fa-trash"></i> {% trans "Delete" %}</a>
                     </div>
                 </li>
             {% empty %}
-                <li class="list-group-item">No encounters yet.</li>
+                <li class="list-group-item">{% trans "No encounters yet." %}</li>
             {% endfor %}
         </ul>
     </div>

@@ -1,5 +1,6 @@
 {% extends 'campaign_manager/base.html' %}
 {% load campaign_manager_filters %}
+{% load i18n %}
 
 {% block title %}{{ encounter.name }}{% endblock %}
 
@@ -7,12 +8,12 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>{{ encounter.name }}</h1>
         <div>
-            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#startEncounterModal"><i class="fas fa-redo"></i> Start/Restart Encounter</button>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#startEncounterModal"><i class="fas fa-redo"></i> {% trans "Start/Restart Encounter" %}</button>
             <form action="{% url 'next_turn' encounter.pk %}" method="post" class="d-inline ms-2">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-success" {% if not encounter.is_active %}disabled{% endif %}><i class="fas fa-forward"></i> Next Turn</button>
+                <button type="submit" class="btn btn-success" {% if not encounter.is_active %}disabled{% endif %}><i class="fas fa-forward"></i> {% trans "Next Turn" %}</button>
             </form>
-            <a href="{% url 'game_session_detail' encounter.game_session.pk %}" class="btn btn-secondary ms-2"><i class="fas fa-arrow-left"></i> Back to Session</a>
+            <a href="{% url 'game_session_detail' encounter.game_session.pk %}" class="btn btn-secondary ms-2"><i class="fas fa-arrow-left"></i> {% trans "Back to Session" %}</a>
         </div>
     </div>
     <p>{{ encounter.description }}</p>
@@ -22,13 +23,13 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="startEncounterModalLabel">Select Enemies for Encounter</h5>
+                    <h5 class="modal-title" id="startEncounterModalLabel">{% trans "Select Enemies for Encounter" %}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="{% url 'start_encounter' encounter.pk %}" method="post">
                     {% csrf_token %}
                     <div class="modal-body">
-                        <p>Enter the quantity for each enemy type to include in this encounter:</p>
+                        <p>{% trans "Enter the quantity for each enemy type to include in this encounter:" %}</p>
                         {% for enemy in encounter.game_session.enemies.all %}
                             <div class="row mb-2 align-items-center">
                                 <div class="col-8">
@@ -39,23 +40,23 @@
                                 </div>
                             </div>
                         {% empty %}
-                            <p>No enemies available in this game session. Add some from the Game Session detail page.</p>
+                            <p>{% trans "No enemies available in this game session. Add some from the Game Session detail page." %}</p>
                         {% endfor %}
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger">Start Encounter</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                        <button type="submit" class="btn btn-danger">{% trans "Start Encounter" %}</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <h2 class="mb-3">Round: {{ encounter.current_round }}</h2>
+    <h2 class="mb-3">{% trans "Round:" %} {{ encounter.current_round }}</h2>
 
     <div class="row mt-4">
         <div class="col-md-12">
-            <h2>Combat Order</h2>
+            <h2>{% trans "Combat Order" %}</h2>
             <ul class="list-group">
                 {% for combatant in combatants %}
                     {% with forloop.counter0 as combatant_index %}
@@ -64,20 +65,20 @@
                                 <strong>{{ combatant.initiative }}</strong> - 
                                 {% if combatant.current_hp <= 0 %}<del>{% endif %}
                                 {% if combatant.hero %}
-                                    {{ combatant.hero.name }} (Hero)
+                                    {{ combatant.hero.name }} ({% trans "Hero" %})
                                 {% else %}
-                                    {{ combatant.enemy.name }} (Enemy)
+                                    {{ combatant.enemy.name }} ({% trans "Enemy" %})
                                 {% endif %}
                                 {% if combatant.current_hp <= 0 %}</del>{% endif %}
                             </div>
                             <div>
-                                HP: {{ combatant.current_hp }}/{% if combatant.hero %}{{ combatant.hero.max_hp }}{% else %}{{ combatant.enemy.max_hp }}{% endif %}
+                                {% trans "HP:" %} {{ combatant.current_hp }}/{% if combatant.hero %}{{ combatant.hero.max_hp }}{% else %}{{ combatant.enemy.max_hp }}{% endif %}
                                 <button type="button" class="btn btn-sm btn-info ms-2" data-bs-toggle="modal" data-bs-target="#characterModal{{ combatant.pk }}">
                                     <i class="fas fa-info-circle"></i>
                                 </button>
                                 {% if combatant_index == encounter.active_combatant_index and combatant.current_hp > 0 and encounter.is_active %}
                                     <button type="button" class="btn btn-sm btn-warning ms-2" data-bs-toggle="modal" data-bs-target="#actionModal{{ combatant.pk }}">
-                                        <i class="fas fa-hand-rock"></i> Actions
+                                        <i class="fas fa-hand-rock"></i> {% trans "Actions" %}
                                     </button>
                                 {% endif %}
                             </div>
@@ -94,17 +95,17 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <p><strong>HP:</strong> {{ combatant.current_hp }}/{% if combatant.hero %}{{ combatant.hero.max_hp }}{% else %}{{ combatant.enemy.max_hp }}{% endif %}</p>
-                                        <p><strong>AC:</strong> {% if combatant.hero %}{{ combatant.hero.armor_class }}{% else %}{{ combatant.enemy.armor_class }}{% endif %}</p>
-                                        <p><strong>Strength:</strong> {% if combatant.hero %}{{ combatant.hero.strength }}{% else %}{{ combatant.enemy.strength }}{% endif %}</p>
-                                        <p><strong>Dexterity:</strong> {% if combatant.hero %}{{ combatant.hero.dexterity }}{% else %}{{ combatant.enemy.dexterity }}{% endif %}</p>
-                                        <p><strong>Constitution:</strong> {% if combatant.hero %}{{ combatant.hero.constitution }}{% else %}{{ combatant.enemy.constitution }}{% endif %}</p>
-                                        <p><strong>Intelligence:</strong> {% if combatant.hero %}{{ combatant.hero.intelligence }}{% else %}{{ combatant.enemy.intelligence }}{% endif %}</p>
-                                        <p><strong>Wisdom:</strong> {% if combatant.hero %}{{ combatant.hero.wisdom }}{% else %}{{ combatant.enemy.wisdom }}{% endif %}</p>
-                                        <p><strong>Charisma:</strong> {% if combatant.hero %}{{ combatant.hero.charisma }}{% else %}{{ combatant.enemy.charisma }}{% endif %}</p>
+                                        <p><strong>{% trans "HP:" %}</strong> {{ combatant.current_hp }}/{% if combatant.hero %}{{ combatant.hero.max_hp }}{% else %}{{ combatant.enemy.max_hp }}{% endif %}</p>
+                                        <p><strong>{% trans "AC:" %}</strong> {% if combatant.hero %}{{ combatant.hero.armor_class }}{% else %}{{ combatant.enemy.armor_class }}{% endif %}</p>
+                                        <p><strong>{% trans "Strength:" %}</strong> {% if combatant.hero %}{{ combatant.hero.strength }}{% else %}{{ combatant.enemy.strength }}{% endif %}</p>
+                                        <p><strong>{% trans "Dexterity:" %}</strong> {% if combatant.hero %}{{ combatant.hero.dexterity }}{% else %}{{ combatant.enemy.dexterity }}{% endif %}</p>
+                                        <p><strong>{% trans "Constitution:" %}</strong> {% if combatant.hero %}{{ combatant.hero.constitution }}{% else %}{{ combatant.enemy.constitution }}{% endif %}</p>
+                                        <p><strong>{% trans "Intelligence:" %}</strong> {% if combatant.hero %}{{ combatant.hero.intelligence }}{% else %}{{ combatant.enemy.intelligence }}{% endif %}</p>
+                                        <p><strong>{% trans "Wisdom:" %}</strong> {% if combatant.hero %}{{ combatant.hero.wisdom }}{% else %}{{ combatant.enemy.wisdom }}{% endif %}</p>
+                                        <p><strong>{% trans "Charisma:" %}</strong> {% if combatant.hero %}{{ combatant.hero.charisma }}{% else %}{{ combatant.enemy.charisma }}{% endif %}</p>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Close" %}</button>
                                     </div>
                                 </div>
                             </div>
@@ -115,16 +116,16 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="actionModalLabel{{ combatant.pk }}">Actions for {% if combatant.hero %}{{ combatant.hero.name }}{% else %}{{ combatant.enemy.name }}{% endif %}</h5>
+                                        <h5 class="modal-title" id="actionModalLabel{{ combatant.pk }}">{% trans "Actions for" %} {% if combatant.hero %}{{ combatant.hero.name }}{% else %}{{ combatant.enemy.name }}{% endif %}</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <h4>Attack</h4>
+                                        <h4>{% trans "Attack" %}</h4>
                                         <form action="{% url 'attack' encounter.pk %}" method="post">
                                             {% csrf_token %}
                                             <input type="hidden" name="attacker" value="{{ combatant.pk }}">
                                             <div class="mb-3">
-                                                <label for="attack_target_{{ combatant.pk }}" class="form-label">Target</label>
+                                                <label for="attack_target_{{ combatant.pk }}" class="form-label">{% trans "Target" %}</label>
                                                 <select name="target" id="attack_target_{{ combatant.pk }}" class="form-select">
                                                     {% for c in combatants %}
                                                         <option value="{{ c.pk }}">{% if c.hero %}{{ c.hero.name }}{% else %}{{ c.enemy.name }}{% endif %}</option>
@@ -132,18 +133,18 @@
                                                 </select>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="attack_damage_{{ combatant.pk }}" class="form-label">Damage</label>
+                                                <label for="attack_damage_{{ combatant.pk }}" class="form-label">{% trans "Damage" %}</label>
                                                 <input type="number" name="damage" id="attack_damage_{{ combatant.pk }}" class="form-control" value="0">
                                             </div>
-                                            <button type="submit" class="btn btn-danger">Apply Damage</button>
+                                            <button type="submit" class="btn btn-danger">{% trans "Apply Damage" %}</button>
                                         </form>
 
-                                        <h4 class="mt-4">Heal</h4>
+                                        <h4 class="mt-4">{% trans "Heal" %}</h4>
                                         <form action="{% url 'heal' encounter.pk %}" method="post">
                                             {% csrf_token %}
                                             <input type="hidden" name="healer" value="{{ combatant.pk }}">
                                             <div class="mb-3">
-                                                <label for="heal_target_{{ combatant.pk }}" class="form-label">Target</label>
+                                                <label for="heal_target_{{ combatant.pk }}" class="form-label">{% trans "Target" %}</label>
                                                 <select name="target" id="heal_target_{{ combatant.pk }}" class="form-select">
                                                     {% for c in combatants %}
                                                         <option value="{{ c.pk }}">{% if c.hero %}{{ c.hero.name }}{% else %}{{ c.enemy.name }}{% endif %}</option>
@@ -151,10 +152,10 @@
                                                 </select>
                                             </div>
                                             <div class="mb-3">
-                                                <label for="heal_amount_{{ combatant.pk }}" class="form-label">Amount</label>
+                                                <label for="heal_amount_{{ combatant.pk }}" class="form-label">{% trans "Amount" %}</label>
                                                 <input type="number" name="amount" id="heal_amount_{{ combatant.pk }}" class="form-control" value="0">
                                             </div>
-                                            <button type="submit" class="btn btn-success">Apply Healing</button>
+                                            <button type="submit" class="btn btn-success">{% trans "Apply Healing" %}</button>
                                         </form>
                                     </div>
                                 </div>
@@ -162,19 +163,19 @@
                         </div>
                     {% endwith %}
                 {% empty %}
-                    <li class="list-group-item">No combatants yet. Start the encounter to begin.</li>
+                    <li class="list-group-item">{% trans "No combatants yet. Start the encounter to begin." %}</li>
                 {% endfor %}
             </ul>
         </div>
     </div>
 
     <div class="mt-4">
-        <h2>Combat Log</h2>
+        <h2>{% trans "Combat Log" %}</h2>
         <ul class="list-group">
             {% for log in encounter.logs.all %}
                 <li class="list-group-item {% if log.action_description|startswith:'Round ' and log.action_description|endswith:' begins!' %}list-group-item-info fw-bold{% endif %}">{{ log.action_description }}</li>
             {% empty %}
-                <li class="list-group-item">No actions yet.</li>
+                <li class="list-group-item">{% trans "No actions yet." %}</li>
             {% endfor %}
         </ul>
     </div>

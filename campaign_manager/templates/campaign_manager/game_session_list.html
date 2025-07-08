@@ -1,16 +1,17 @@
 {% extends 'campaign_manager/base.html' %}
+{% load i18n %}
 
-{% block title %}Game Sessions{% endblock %}
+{% block title %}{% trans "Game Sessions" %}{% endblock %}
 
 {% block content %}
-    <h1>Game Sessions</h1>
+    <h1>{% trans "Game Sessions" %}</h1>
     <div class="list-group">
         {% for session in sessions %}
             <a href="{% url 'game_session_detail' session.pk %}" class="list-group-item list-group-item-action">
                 {{ session.name }}
             </a>
         {% empty %}
-            <p>No game sessions yet.</p>
+            <p>{% trans "No game sessions yet." %}</p>
         {% endfor %}
     </div>
 {% endblock %}
