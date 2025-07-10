@@ -1,4 +1,8 @@
+
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 
 
 class GameSession(models.Model):
@@ -21,7 +25,6 @@ class Character(models.Model):
     armor_class = models.PositiveIntegerField(default=10)
     max_hp = models.PositiveIntegerField(default=10)
 
-    # Monster-specific fields (now directly in Character)
     size = models.CharField(max_length=50, blank=True, null=True)
     creature_type = models.CharField(max_length=100, blank=True, null=True)
     source = models.CharField(max_length=100, blank=True, null=True)
@@ -33,12 +36,10 @@ class Character(models.Model):
     actions_description = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
 
-    # General fields (race remains here as it applies to both heroes and some enemies)
     race = models.CharField(max_length=100, blank=True, null=True)
     proficiency_bonus = models.PositiveIntegerField(default=2)
     speed = models.CharField(max_length=50, blank=True, null=True)
 
-    # Text fields for complex data (already existing)
     traits_description = models.TextField(blank=True, null=True)
     proficiencies_description = models.TextField(blank=True, null=True)
     equipment_description = models.TextField(blank=True, null=True)
@@ -55,7 +56,6 @@ class Hero(Character):
     current_hp = models.IntegerField()
     player_name = models.CharField(max_length=255, blank=True, null=True)
 
-    # Fields moved from Character to Hero
     char_class = models.CharField(max_length=100, blank=True, null=True)
     char_subclass = models.CharField(max_length=100, blank=True, null=True)
     level = models.PositiveIntegerField(default=1)
@@ -79,7 +79,6 @@ class Encounter(models.Model):
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    # New fields for turn/round tracking
     current_round = models.PositiveIntegerField(default=0)
     active_combatant_index = models.PositiveIntegerField(default=0)
 
@@ -89,17 +88,18 @@ class Encounter(models.Model):
 
 class Combatant(models.Model):
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='combatants')
-    hero = models.ForeignKey(Hero, on_delete=models.CASCADE, null=True, blank=True)
-    enemy = models.ForeignKey(Enemy, on_delete=models.CASCADE, null=True, blank=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    character = GenericForeignKey('content_type', 'object_id')
     current_hp = models.IntegerField()
     initiative = models.PositiveIntegerField()
 
     def __str__(self):
-        if self.hero:
-            return f'{self.hero.name} in {self.encounter.name}'
-        elif self.enemy:
-            return f'{self.enemy.name} in {self.encounter.name}'
-        return f'Combatant in {self.encounter.name}'
+        return f'{self.character} in {self.encounter.name}'
+
+    def clean(self):
+        if self.current_hp < 0:
+            raise ValidationError({'current_hp': 'HP cannot be negative.'})
 
 
 class EncounterLog(models.Model):

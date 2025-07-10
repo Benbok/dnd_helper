@@ -4,7 +4,7 @@
 {% block title %}{% trans "Confirm Delete" %}{% endblock %}
 
 {% block content %}
-    <h1>{% trans "Are you sure you want to delete" %} {{ encounter.name }}?</h1>
+    <h1>{% blocktrans with name=encounter.name %}Are you sure you want to delete {{ name }}?{% endblocktrans %}</h1>
     <form method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>

@@ -35,12 +35,12 @@
                     <p><strong>{% trans "HP:" %}</strong> {{ enemy.max_hp }}</p>
                     <p><strong>{% trans "AC:" %}</strong> {{ enemy.armor_class }}</p>
                     <div class="row">
-                        <div class="col-6"><p><strong>{% trans "Strength:" %}</strong> {{ enemy.strength }}{{ enemy.strength|ability_modifier }}</p></div>
-                        <div class="col-6"><p><strong>{% trans "Dexterity:" %}</strong> {{ enemy.dexterity }}{{ enemy.dexterity|ability_modifier }}</p></div>
-                        <div class="col-6"><p><strong>{% trans "Constitution:" %}</strong> {{ enemy.constitution }}{{ enemy.constitution|ability_modifier }}</p></div>
-                        <div class="col-6"><p><strong>{% trans "Intelligence:" %}</strong> {{ enemy.intelligence }}{{ enemy.intelligence|ability_modifier }}</p></div>
-                        <div class="col-6"><p><strong>{% trans "Wisdom:" %}</strong> {{ enemy.wisdom }}{{ enemy.wisdom|ability_modifier }}</p></div>
-                        <div class="col-6"><p><strong>{% trans "Charisma:" %}</strong> {{ enemy.charisma }}{{ enemy.charisma|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Strength:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ enemy.pk }}" data-character-type="enemy" data-ability-name="strength">{{ enemy.strength }}{{ enemy.strength|ability_modifier }}</a></p></div>
+                        <div class="col-6"><p><strong>{% trans "Dexterity:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ enemy.pk }}" data-character-type="enemy" data-ability-name="dexterity">{{ enemy.dexterity }}{{ enemy.dexterity|ability_modifier }}</a></p></div>
+                        <div class="col-6"><p><strong>{% trans "Constitution:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ enemy.pk }}" data-character-type="enemy" data-ability-name="constitution">{{ enemy.constitution }}{{ enemy.constitution|ability_modifier }}</a></p></div>
+                        <div class="col-6"><p><strong>{% trans "Intelligence:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ enemy.pk }}" data-character-type="enemy" data-ability-name="intelligence">{{ enemy.intelligence }}{{ enemy.intelligence|ability_modifier }}</a></p></div>
+                        <div class="col-6"><p><strong>{% trans "Wisdom:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ enemy.pk }}" data-character-type="enemy" data-ability-name="wisdom">{{ enemy.wisdom }}{{ enemy.wisdom|ability_modifier }}</a></p></div>
+                        <div class="col-6"><p><strong>{% trans "Charisma:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ enemy.pk }}" data-character-type="enemy" data-ability-name="charisma">{{ enemy.charisma }}{{ enemy.charisma|ability_modifier }}</a></p></div>
                     </div>
                 </div>
             </div>
@@ -108,4 +108,50 @@
             {% endif %}
         </div>
     </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+      <div id="mainToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body" id="mainToastBody">
+            <!-- Сообщение появится здесь -->
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.ability-check').forEach(item => {
+            item.addEventListener('click', async function(event) {
+                event.preventDefault();
+                const characterId = this.dataset.characterId;
+                const characterType = this.dataset.characterType; 
+                const abilityName = this.dataset.abilityName;
+                
+                try {
+                    const response = await fetch(`/roll_general_ability_check/${characterId}/${characterType}/${abilityName}/`); // Updated URL
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        alert(data.message);
+                        updateCombatLog(data.logs);
+                        updateCombatants(data.combatants);
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                } catch (error) {
+                    console.error('Error during ability check:', error);
+                    alert('An error occurred during the ability check.');
+                }
+            });
+        });
+
+        function showToast(message) {
+            const toastBody = document.getElementById('mainToastBody');
+            toastBody.textContent = message;
+            const toastEl = document.getElementById('mainToast');
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    </script>
 {% endblock %}

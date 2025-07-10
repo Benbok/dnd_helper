@@ -37,12 +37,12 @@
                     <p><strong>{% trans "HP:" %}</strong> {{ hero.current_hp }}/{{ hero.max_hp }}</p>
                     <p><strong>{% trans "AC:" %}</strong> {{ hero.armor_class }}</p>
                     <div class="row">
-                        <div class="col-6"><p><strong>{% trans "Strength:" %}</strong> {{ hero.strength }}{{ hero.strength|ability_modifier }}</p></div>
-                        <div class="col-6"><p><strong>{% trans "Dexterity:" %}</strong> {{ hero.dexterity }}{{ hero.dexterity|ability_modifier }}</p></div>
-                        <div class="col-6"><p><strong>{% trans "Constitution:" %}</strong> {{ hero.constitution }}{{ hero.constitution|ability_modifier }}</p></div>
-                        <div class="col-6"><p><strong>{% trans "Intelligence:" %}</strong> {{ hero.intelligence }}{{ hero.intelligence|ability_modifier }}</p></div>
-                        <div class="col-6"><p><strong>{% trans "Wisdom:" %}</strong> {{ hero.wisdom }}{{ hero.wisdom|ability_modifier }}</p></div>
-                        <div class="col-6"><p><strong>{% trans "Charisma:" %}</strong> {{ hero.charisma }}{{ hero.charisma|ability_modifier }}</p></div>
+                        <div class="col-6"><p><strong>{% trans "Strength:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ hero.pk }}" data-character-type="hero" data-ability-name="strength">{{ hero.strength }}{{ hero.strength|ability_modifier }}</a></p></div>
+                        <div class="col-6"><p><strong>{% trans "Dexterity:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ hero.pk }}" data-character-type="hero" data-ability-name="dexterity">{{ hero.dexterity }}{{ hero.dexterity|ability_modifier }}</a></p></div>
+                        <div class="col-6"><p><strong>{% trans "Constitution:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ hero.pk }}" data-character-type="hero" data-ability-name="constitution">{{ hero.constitution }}{{ hero.constitution|ability_modifier }}</a></p></div>
+                        <div class="col-6"><p><strong>{% trans "Intelligence:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ hero.pk }}" data-character-type="hero" data-ability-name="intelligence">{{ hero.intelligence }}{{ hero.intelligence|ability_modifier }}</a></p></div>
+                        <div class="col-6"><p><strong>{% trans "Wisdom:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ hero.pk }}" data-character-type="hero" data-ability-name="wisdom">{{ hero.wisdom }}{{ hero.wisdom|ability_modifier }}</a></p></div>
+                        <div class="col-6"><p><strong>{% trans "Charisma:" %}</strong> <a href="#" class="ability-check" data-character-id="{{ hero.pk }}" data-character-type="hero" data-ability-name="charisma">{{ hero.charisma }}{{ hero.charisma|ability_modifier }}</a></p></div>
                     </div>
                 </div>
             </div>
@@ -81,4 +81,29 @@
             {% endif %}
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('.ability-check').forEach(item => {
+            item.addEventListener('click', async function(event) {
+                event.preventDefault();
+                const characterId = this.dataset.characterId;
+                const characterType = this.dataset.characterType; 
+                const abilityName = this.dataset.abilityName;
+                
+                try {
+                    const response = await fetch(`/roll_general_ability_check/${characterId}/${characterType}/${abilityName}/`); // Updated URL
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        alert(data.message);
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                } catch (error) {
+                    console.error('Error during ability check:', error);
+                    alert('An error occurred during the ability check.');
+                }
+            });
+        });
+    </script>
 {% endblock %}

@@ -22,11 +22,15 @@ urlpatterns = [
     # Encounter URLs
     path('session/<int:game_session_pk>/encounters/', views.encounter_list, name='encounter_list'),
     path('session/<int:game_session_pk>/encounters/add/', views.encounter_create, name='encounter_create'),
+    path('encounters/<int:pk>/edit/', views.encounter_update, name='encounter_update'),
+    path('encounters/<int:pk>/delete/', views.encounter_delete, name='encounter_delete'),
     path('encounters/<int:pk>/', views.encounter_detail, name='encounter_detail'),
     path('encounters/<int:pk>/start/', views.start_encounter, name='start_encounter'),
     path('encounters/<int:pk>/next_turn/', views.next_turn, name='next_turn'),
     path('encounters/<int:pk>/attack/', views.attack, name='attack'),
     path('encounters/<int:pk>/heal/', views.heal, name='heal'),
-    path('encounters/<int:pk>/edit/', views.encounter_update, name='encounter_update'),
-    path('encounters/<int:pk>/delete/', views.encounter_delete, name='encounter_delete'),
+
+    # Ability Check URLs
+    path('roll_ability_check/<int:encounter_id>/<int:character_id>/<str:character_type>/<str:ability_name>/', views.roll_ability_check, name='roll_ability_check'),
+    path('roll_general_ability_check/<int:character_id>/<str:character_type>/<str:ability_name>/', views.roll_general_ability_check, name='roll_general_ability_check'),
 ]
