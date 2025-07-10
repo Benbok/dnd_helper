@@ -5,6 +5,13 @@
 {% block title %}{{ encounter.name }}{% endblock %}
 
 {% block content %}
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>{{ encounter.name }}</h1>
         <div>
@@ -120,7 +127,6 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <!-- Краткая сводка по combatant -->
                                         <div class="mb-3">
                                             <span class="badge bg-primary">{% if combatant.is_hero %}{% trans "Hero" %}{% else %}{% trans "Enemy" %}{% endif %}</span>
                                             <strong>{{ combatant.name }}</strong><br>
@@ -128,8 +134,7 @@
                                         </div>
                                         <hr>
                                         <h4 class="text-danger">{% trans "Attack" %}</h4>
-                                        <p class="text-muted small">{% trans "Select a target and enter the damage dealt." %}</p>
-                                        <form id="attack-form-{{ combatant.id }}" action="{% url 'attack' encounter.pk %}" method="post">
+                                        <form method="post" action="{% url 'attack' encounter.pk %}">
                                             {% csrf_token %}
                                             <input type="hidden" name="attacker" value="{{ combatant.id }}">
                                             <div class="mb-3">
@@ -148,8 +153,7 @@
                                         </form>
                                         <hr>
                                         <h4 class="text-success mt-4">{% trans "Heal" %}</h4>
-                                        <p class="text-muted small">{% trans "Select a target and enter the amount of healing." %}</p>
-                                        <form id="heal-form-{{ combatant.id }}" action="{% url 'heal' encounter.pk %}" method="post">
+                                        <form method="post" action="{% url 'heal' encounter.pk %}">
                                             {% csrf_token %}
                                             <input type="hidden" name="healer" value="{{ combatant.id }}">
                                             <div class="mb-3">
@@ -219,6 +223,13 @@
         </ul>
     </div>
 
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="action-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="toast-body"></div>
+        </div>
+    </div>
+      
+
     <script>
         function getCookie(name) {
             let cookieValue = null;
@@ -234,172 +245,10 @@
             }
             return cookieValue;
         }
-
+        
         const csrftoken = getCookie('csrftoken');
-
-        async function sendAction(url, formData) {
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrftoken,
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams(formData).toString()
-                });
-                const data = await response.json();
-
-                if (response.ok) {
-                    alert(data.message);
-                    updateCombatLog(data.logs);
-                    updateCombatants(data.combatants);
-                } else {
-                    alert(`Error: ${data.error}`);
-                }
-            } catch (error) {
-                console.error('Error during action:', error);
-                alert('An error occurred during the action.');
-            }
-        }
-
-        function updateCombatLog(logs) {
-            const combatLogList = document.getElementById('combat-log-list');
-            combatLogList.innerHTML = '';
-            if (logs.length === 0) {
-                combatLogList.innerHTML = `<li class="list-group-item">{% trans "No actions yet." %}</li>`;
-            } else {
-                logs.forEach(log => {
-                    const li = document.createElement('li');
-                    li.classList.add('list-group-item');
-                    if (log.action_description.startsWith('Round ') && log.action_description.endsWith(' begins!')) {
-                        li.classList.add('list-group-item-info', 'fw-bold');
-                    }
-                    li.textContent = log.action_description;
-                    combatLogList.appendChild(li);
-                });
-            }
-        }
-
-        function updateCombatants(combatants) {
-            const combatOrderList = document.getElementById('combat-order-list');
-            combatOrderList.innerHTML = '';
-            combatants.sort((a, b) => b.initiative - a.initiative); // Sort by initiative descending
-
-            combatants.forEach((combatant, index) => {
-                const li = document.createElement('li');
-                li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-                if (index === {{ encounter.active_combatant_index }}) {
-                    li.classList.add('list-group-item-primary');
-                }
-                if (combatant.current_hp <= 0) {
-                    li.classList.add('list-group-item-secondary');
-                }
-                li.dataset.combatantId = combatant.id;
-
-                let nameHtml = `<strong>${combatant.initiative}</strong> - `;
-                if (combatant.current_hp <= 0) {
-                    nameHtml += '<del>';
-                }
-                nameHtml += `${combatant.name} (${combatant.is_hero ? '{% trans "Hero" %}' : '{% trans "Enemy" %}'})`;
-                if (combatant.current_hp <= 0) {
-                    nameHtml += '</del>';
-                }
-
-                li.innerHTML = `
-                    <div>
-                        ${nameHtml}
-                    </div>
-                    <div>
-                        {% trans "HP:" %} <span id="hp-${combatant.id}">${combatant.current_hp}</span>/${combatant.max_hp}
-                        <button type="button" class="btn btn-sm btn-info ms-2" data-bs-toggle="modal" data-bs-target="#characterModal${combatant.id}">
-                            <i class="fas fa-info-circle"></i>
-                        </button>
-                        ${index === {{ encounter.active_combatant_index }} && combatant.current_hp > 0 && {{ encounter.is_active|lower }} ? `
-                        <button type="button" class="btn btn-sm btn-warning ms-2" data-bs-toggle="modal" data-bs-target="#actionModal${combatant.id}">
-                            <i class="fas fa-hand-rock"></i> {% trans "Actions" %}
-                        </button>` : ''}
-                    </div>
-                `;
-                combatOrderList.appendChild(li);
-
-                // Update HP in character modal if it's open
-                const modalHpSpan = document.getElementById(`modal-hp-${combatant.id}`);
-                if (modalHpSpan) {
-                    modalHpSpan.textContent = combatant.current_hp;
-                }
-
-                // Update character modal content with new stats
-                const characterModalBody = document.getElementById(`characterModalBody${combatant.id}`);
-                if (characterModalBody) {
-                    characterModalBody.innerHTML = `
-                        <p><strong>{% trans "HP:" %}</strong> ${combatant.current_hp}/${combatant.max_hp}</p>
-                        <p><strong>{% trans "AC:" %}</strong> ${combatant.armor_class}</p>
-                        <p><strong>{% trans "Strength:" %}</strong> <a href="#" class="ability-check-modal" data-encounter-id="{{ encounter.pk }}" data-character-id="${combatant.id}" data-character-type="${combatant.is_hero ? 'hero' : 'enemy'}" data-ability-name="strength">${combatant.strength}${combatant.strength_modifier >= 0 ? ' +' : ' '}${combatant.strength_modifier}</a></p>
-                        <p><strong>{% trans "Dexterity:" %}</strong> <a href="#" class="ability-check-modal" data-encounter-id="{{ encounter.pk }}" data-character-id="${combatant.id}" data-character-type="${combatant.is_hero ? 'hero' : 'enemy'}" data-ability-name="dexterity">${combatant.dexterity}${combatant.dexterity_modifier >= 0 ? ' +' : ' '}${combatant.dexterity_modifier}</a></p>
-                        <p><strong>{% trans "Constitution:" %}</strong> <a href="#" class="ability-check-modal" data-encounter-id="{{ encounter.pk }}" data-character-id="${combatant.id}" data-character-type="${combatant.is_hero ? 'hero' : 'enemy'}" data-ability-name="constitution">${combatant.constitution}${combatant.constitution_modifier >= 0 ? ' +' : ' '}${combatant.constitution_modifier}</a></p>
-                        <p><strong>{% trans "Intelligence:" %}</strong> <a href="#" class="ability-check-modal" data-encounter-id="{{ encounter.pk }}" data-character-id="${combatant.id}" data-character-type="${combatant.is_hero ? 'hero' : 'enemy'}" data-ability-name="intelligence">${combatant.intelligence}${combatant.intelligence_modifier >= 0 ? ' +' : ' '}${combatant.intelligence_modifier}</a></p>
-                        <p><strong>{% trans "Wisdom:" %}</strong> <a href="#" class="ability-check-modal" data-encounter-id="{{ encounter.pk }}" data-character-id="${combatant.id}" data-character-type="${combatant.is_hero ? 'hero' : 'enemy'}" data-ability-name="wisdom">${combatant.wisdom}${combatant.wisdom_modifier >= 0 ? ' +' : ' '}${combatant.wisdom_modifier}</a></p>
-                        <p><strong>{% trans "Charisma:" %}</strong> <a href="#" class="ability-check-modal" data-encounter-id="{{ encounter.pk }}" data-character-id="${combatant.id}" data-character-type="${combatant.is_hero ? 'hero' : 'enemy'}" data-ability-name="charisma">${combatant.charisma}${combatant.charisma_modifier >= 0 ? ' +' : ' '}${combatant.charisma_modifier}</a></p>
-                    `;
-                }
-            });
-            initCombatantModalsAndActions();
-        }
-
-        function initCombatantModalsAndActions() {
-            // Info (modal) кнопки — Bootstrap сам инициализирует по data-bs-toggle, но если вы пересоздаёте DOM, убедитесь, что модальные окна есть в HTML.
-            // Action (модальное окно действий)
-            document.querySelectorAll('form[id^="attack-form-"]').forEach(form => {
-                form.addEventListener('submit', async function(event) {
-                    event.preventDefault();
-                    const url = this.action;
-                    const formData = new FormData(this);
-                    await sendAction(url, formData);
-                    // Close the modal after action
-                    const modal = bootstrap.Modal.getInstance(this.closest('.modal'));
-                    if (modal) modal.hide();
-                });
-            });
-
-            document.querySelectorAll('form[id^="heal-form-"]').forEach(form => {
-                form.addEventListener('submit', async function(event) {
-                    event.preventDefault();
-                    const url = this.action;
-                    const formData = new FormData(this);
-                    await sendAction(url, formData);
-                    // Close the modal after action
-                    const modal = bootstrap.Modal.getInstance(this.closest('.modal'));
-                    if (modal) modal.hide();
-                });
-            });
-
-            // Ability check
-            document.querySelectorAll('.ability-check-modal').forEach(item => {
-                item.addEventListener('click', async function(event) {
-                    event.preventDefault();
-                    const characterId = this.dataset.characterId;
-                    const characterType = this.dataset.characterType; 
-                    const abilityName = this.dataset.abilityName;
-                    const encounterId = {{ encounter.pk }};
-                    
-                    try {
-                        const response = await fetch(`/roll_ability_check/${encounterId}/${characterId}/${characterType}/${abilityName}/`);
-                        const data = await response.json();
-
-                        if (response.ok) {
-                            alert(data.message);
-                            updateCombatLog(data.logs);
-                            updateCombatants(data.combatants);
-                        } else {
-                            alert(`Error: ${data.error}`);
-                        }
-                    } catch (error) {
-                        console.error('Error during ability check:', error);
-                        alert('An error occurred during the ability check.');
-                    }
-                });
-            });
-        }
-
+        
+        // Удалить все JS-обработчики, связанные с sendAction, updateCombatLog, updateCombatants, initCombatantModalsAndActions, showToast.
+        
     </script>
 {% endblock %}

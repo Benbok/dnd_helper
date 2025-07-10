@@ -4,6 +4,7 @@ from django.http import JsonResponse
 import random
 from .models import GameSession, Hero, Enemy, Encounter, Combatant, EncounterLog
 from .forms import HeroForm, EnemyForm, EncounterForm, AttackForm, HealForm
+from django.contrib import messages
 
 
 def game_session_list(request):
@@ -317,17 +318,15 @@ def attack(request, pk):
             target = form.cleaned_data['target']
             damage = form.cleaned_data['damage']
 
-            # Применяем урон
             target.current_hp -= damage
             target.save()
 
-            # Обновляем HP героя, если это герой
+            # Если это герой — обновить его HP
             hero_type = ContentType.objects.get_for_model(Hero)
             if target.content_type == hero_type:
                 target.character.current_hp = target.current_hp
                 target.character.save()
 
-            # Логируем атаку
             EncounterLog.objects.create(
                 encounter=encounter,
                 actor=attacker,
@@ -339,7 +338,6 @@ def attack(request, pk):
                 }
             )
 
-            # Логируем смерть цели, если нужно
             if target.current_hp <= 0:
                 EncounterLog.objects.create(
                     encounter=encounter,
@@ -347,37 +345,11 @@ def attack(request, pk):
                     action_description=_t('%(target)s has been defeated!') % {'target': target.character.name}
                 )
 
-            # Возвращаем обновлённые логи и combatants
-            logs = list(encounter.logs.values('action_description'))
+            messages.success(request, _t("Attack successful!"))
+        else:
+            messages.error(request, _t("Invalid form data."))
 
-            hero_type = ContentType.objects.get_for_model(Hero)  # Повторно получаем тип (можно вынести наверх)
-            combatants_data = []
-            for c in encounter.combatants.order_by('-initiative'):
-                character_obj = c.character
-                combatants_data.append({
-                    'id': c.pk,
-                    'name': character_obj.name,
-                    'current_hp': c.current_hp,
-                    'max_hp': character_obj.max_hp,
-                    'initiative': c.initiative,
-                    'is_hero': c.content_type == hero_type,
-                    'strength': character_obj.strength,
-                    'strength_modifier': (character_obj.strength - 10) // 2,
-                    'dexterity': character_obj.dexterity,
-                    'dexterity_modifier': (character_obj.dexterity - 10) // 2,
-                    'constitution': character_obj.constitution,
-                    'constitution_modifier': (character_obj.constitution - 10) // 2,
-                    'intelligence': character_obj.intelligence,
-                    'intelligence_modifier': (character_obj.intelligence - 10) // 2,
-                    'wisdom': character_obj.wisdom,
-                    'wisdom_modifier': (character_obj.wisdom - 10) // 2,
-                    'charisma': character_obj.charisma,
-                    'charisma_modifier': (character_obj.charisma - 10) // 2,
-                    'armor_class': character_obj.armor_class,
-                })
-
-            return JsonResponse({'message': _t("Attack successful!"), 'logs': logs, 'combatants': combatants_data})
-    return JsonResponse({'error': _t("Invalid form data.")}, status=400)
+    return redirect('encounter_detail', pk=encounter.pk)
 
 
 
@@ -391,50 +363,29 @@ def heal(request, pk):
             amount = form.cleaned_data['amount']
 
             target.current_hp = min(target.current_hp + amount,
-                                    target.hero.max_hp if target.hero else target.enemy.max_hp)
+                                    target.character.max_hp)
             target.save()
 
-            if target.hero:
-                target.hero.current_hp = target.current_hp
-                target.hero.save()
+            if hasattr(target.character, 'current_hp'):
+                target.character.current_hp = target.current_hp
+                target.character.save()
 
             EncounterLog.objects.create(
                 encounter=encounter,
                 actor=healer,
                 target=target,
-                action_description=_t('%(healer)s heals %(target)s for %(amount)s HP.') % {'healer': healer,
-                                                                                           'target': target,
-                                                                                           'amount': amount}
+                action_description=_t('%(healer)s heals %(target)s for %(amount)s HP.') % {
+                    'healer': healer.character.name,
+                    'target': target.character.name,
+                    'amount': amount
+                }
             )
 
-            # Fetch updated logs and combatants for AJAX response
-            logs = list(encounter.logs.values('action_description'))
-            combatants_data = []
-            for c in encounter.combatants.order_by('-initiative'):
-                character_obj = c.character
-                combatants_data.append({
-                    'id': c.pk,
-                    'name': character_obj.name,
-                    'current_hp': c.current_hp,
-                    'max_hp': character_obj.max_hp,
-                    'initiative': c.initiative,
-                    'is_hero': True if c.hero else False,
-                    'strength': character_obj.strength,
-                    'strength_modifier': (character_obj.strength - 10) // 2,
-                    'dexterity': character_obj.dexterity,
-                    'dexterity_modifier': (character_obj.dexterity - 10) // 2,
-                    'constitution': character_obj.constitution,
-                    'constitution_modifier': (character_obj.constitution - 10) // 2,
-                    'intelligence': character_obj.intelligence,
-                    'intelligence_modifier': (character_obj.intelligence - 10) // 2,
-                    'wisdom': character_obj.wisdom,
-                    'wisdom_modifier': (character_obj.wisdom - 10) // 2,
-                    'charisma': character_obj.charisma,
-                    'charisma_modifier': (character_obj.charisma - 10) // 2,
-                    'armor_class': character_obj.armor_class,
-                })
-            return JsonResponse({'message': _t("Healing successful!"), 'logs': logs, 'combatants': combatants_data})
-    return JsonResponse({'error': _t("Invalid form data.")}, status=400)
+            messages.success(request, _t("Healing successful!"))
+        else:
+            messages.error(request, _t("Invalid form data."))
+
+    return redirect('encounter_detail', pk=encounter.pk)
 
 
 def roll_ability_check(request, encounter_id, character_id, character_type, ability_name):
